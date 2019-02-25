@@ -1,0 +1,105 @@
+<link rel="stylesheet" href="css/d3.geomap.css">
+<script src="d3-geo/d3-geo.min.js"></script>
+<script src="vendor/d3.geomap.dependencies.min.js"></script>
+<script src="js/d3.geomap.min.js"></script>
+
+<div>
+    <h2>Static Map Marker</h2>
+    <div>longitude</div>
+    <div><input type="number" class="long"></div>
+    <div>lattitude</div>
+    <div><input type="number" class="lat"></div>
+</div>
+<div class="map">
+   <svg id="svg" viewBox="0 0 600 600"></svg> 
+</div>
+
+<script>
+const svg = d3.select('svg')
+
+// Define a projection
+const projection = d3.geoMercator()
+    .center([122,24])
+    .scale(6000)
+
+//Creates a new geographic path
+const path = d3.geoPath(projection)
+
+//Taipei [longitude, latitude] 
+const originPoint = [121.5648,25.0346] 
+
+const longIpt = document.querySelector('.long')
+const latIpt =document.querySelector('.lat')
+
+const mark = ()=>{
+    const point = [[longIpt.value,latIpt.value]]
+    d3.select('.map img').remove()
+
+    d3.select('.map')
+    .selectAll()
+    .data(point)
+    .enter()
+    .append('img')
+    .attr('class','marker')
+    .attr('src','mark.png')
+    .style('left',function(d){
+        return projection(d)[0]/6 + '%'
+    })
+    .style('top',function(d){
+        return projection(d)[1]/6 + '%'
+    })
+}
+
+longIpt.value = originPoint[0]
+latIpt.value = originPoint[1]
+longIpt.addEventListener('input',mark)
+latIpt.addEventListener('input',mark)
+
+// Init map
+d3.json("./taiwan.json",function(err,json){
+    svg
+    .selectAll('g')
+    .data(json.features)
+    .enter()
+    .append('path')
+    .attr('d',path)
+    .attr('fill',function(d,i){
+        return `hsl(${i*5}, 100%, 50%)`
+    })
+    .attr('stroke','black')
+    .attr('class','op')
+
+    mark()
+})
+</script>
+
+<style>
+#svg {
+    cursor: pointer;
+}
+.map {
+    position: relative;
+    width: 100%;
+    max-width: 750px;
+}
+.marker{
+    position: absolute;
+    display: block;
+    width: 5%;
+    height: 5%;
+    max-width: 30px;
+    max-height: 30px;
+    transform: translate(-50%,-100%);
+}
+.op {
+    opacity: 0.2;
+}
+.op:hover{
+    opacity: 0.8;
+}
+.rect {
+    width: 100px;
+    height: 100px;
+    background-color: gray;
+}
+</style>
