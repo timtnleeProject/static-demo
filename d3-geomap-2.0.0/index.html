@@ -4,6 +4,7 @@
 <div>
     <h2>Static Map Marker</h2>
     <img id="marker" src="mark.png" alt="" style="display:none">
+    <div class="flex"></div>
     <div>longitude</div>
     <div><input type="number" step="0.1" class="long"></div>
     <div>lattitude</div>
@@ -11,7 +12,7 @@
 </div>
 <h4>SVG</h4>
 <div class="map">
-   <svg id="svg" viewBox="0 0 600 600"></svg> 
+   <svg id="svg" viewBox="0 0 600 600"></svg>
 </div>
 <h4>CANVAS</h4>
 <div class="map">
@@ -24,13 +25,18 @@ const svg = d3.select('svg')
 // Define a projection
 const projection = d3.geoMercator()
     .center([122,24])
-    .scale(6000)
+    .scale(5000)
 
 //Creates a new geographic path
 const path = d3.geoPath(projection)
 
 //Taipei [longitude, latitude] 
-const originPoint = [121.5648,25.0346] 
+const geoMap = {
+    "台北": [121.5648,25.0346],
+    "台中": [120.6666,24.166],
+    "高雄": [120.2833,22.6333]
+}
+const originPoint = geoMap["台北"]
 
 const longIpt = document.querySelector('.long')
 const latIpt =document.querySelector('.lat')
@@ -68,8 +74,23 @@ const mark = ()=>{
 
 longIpt.value = originPoint[0]
 latIpt.value = originPoint[1]
+
 longIpt.addEventListener('input',mark)
 latIpt.addEventListener('input',mark)
+
+const frag = document.createDocumentFragment()
+for(let location in geoMap) {
+    const btn = document.createElement('button')
+    btn.innerText = location
+    btn.addEventListener('click',function(){
+        const geo = geoMap[location]
+        longIpt.value = geo[0]
+        latIpt.value = geo[1]
+        mark()
+    })
+    frag.appendChild(btn)
+}
+document.querySelector('.flex').appendChild(frag)
 
 let paths = []
 // Init map
@@ -101,10 +122,14 @@ d3.json("./taiwan.json",function(err,json){
 #canvas {
     width: 100%;
 }
+.flex {
+    display: flex;
+}
 .map {
     position: relative;
     width: 100%;
     max-width: 900px;
+    border: 1px dotted lightgray;
 }
 .marker{
     position: absolute;
