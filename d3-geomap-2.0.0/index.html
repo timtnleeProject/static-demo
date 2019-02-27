@@ -3,13 +3,19 @@
 
 <div>
     <h2>Static Map Marker</h2>
+    <img id="marker" src="mark.png" alt="" style="display:none">
     <div>longitude</div>
     <div><input type="number" step="0.1" class="long"></div>
     <div>lattitude</div>
     <div><input type="number" step="0.1" class="lat"></div>
 </div>
+<h4>SVG</h4>
 <div class="map">
    <svg id="svg" viewBox="0 0 600 600"></svg> 
+</div>
+<h4>CANVAS</h4>
+<div class="map">
+    <canvas id="canvas" width="600" height="600"></canvas>
 </div>
 
 <script>
@@ -46,6 +52,18 @@ const mark = ()=>{
     .style('top',function(d){
         return projection(d)[1]/6 + '%'
     })
+
+    const ctx = canvas.getContext('2d')
+    ctx.globalAlpha = 0.2
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    paths.forEach((p,i)=>{
+        ctx.stroke(p)
+        ctx.fillStyle = `hsl(${i*5}, 100%, 50%)`
+        ctx.fill(p)
+    })
+    const [x,y] = projection(point[0])
+    ctx.globalAlpha = 1
+    ctx.drawImage(marker,0,0,marker.naturalWidth,marker.naturalHeight,x-15,y-30,30,30)
 }
 
 longIpt.value = originPoint[0]
@@ -53,6 +71,7 @@ latIpt.value = originPoint[1]
 longIpt.addEventListener('input',mark)
 latIpt.addEventListener('input',mark)
 
+let paths = []
 // Init map
 d3.json("./taiwan.json",function(err,json){
     svg
@@ -66,6 +85,10 @@ d3.json("./taiwan.json",function(err,json){
     })
     .attr('stroke','black')
     .attr('class','op')
+    
+    const ctx = document.querySelector('#canvas').getContext('2d')
+
+    paths = json.features.map(geo=>new Path2D(path(geo)))
 
     mark()
 })
@@ -75,10 +98,13 @@ d3.json("./taiwan.json",function(err,json){
 #svg {
     cursor: pointer;
 }
+#canvas {
+    width: 100%;
+}
 .map {
     position: relative;
     width: 100%;
-    max-width: 750px;
+    max-width: 900px;
 }
 .marker{
     position: absolute;
